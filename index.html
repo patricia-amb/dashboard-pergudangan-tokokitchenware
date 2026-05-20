@@ -58,7 +58,7 @@
     .filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:15px}
     .filters input,.filters select{max-width:220px;background:white}
     .note{background:#fff8df;color:#6b4d00;border:1px solid #e2c56d;border-radius:8px;padding:11px;margin-bottom:12px;font-size:14px}
-    .kpi-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:14px}
+    .kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:14px}
     .kpi{background:white;border:1px solid var(--line);border-radius:12px;padding:16px;box-shadow:var(--shadow);min-height:105px}
     .kpi .label{color:var(--muted);font-size:13px;margin-bottom:8px}
     .kpi .value{font-size:28px;color:var(--blue);font-weight:800}
@@ -166,6 +166,22 @@
       @page{size:landscape;margin:8mm}
     }
 
+
+    .main{
+      background:rgba(255,255,255,.16);
+      backdrop-filter:blur(2px);
+    }
+    .topbar{
+      background:linear-gradient(120deg,#17324d,#22577a)!important;
+      box-shadow:0 10px 26px rgba(15,23,42,.14);
+    }
+    .card,.table-card,.chart-card,.kpi{
+      background:rgba(255,255,255,.94)!important;
+      backdrop-filter:blur(8px);
+      border:1px solid rgba(226,232,240,.82)!important;
+      box-shadow:0 10px 24px rgba(15,23,42,.08)!important;
+    }
+
     @media(max-width:1200px){.kpi-grid{grid-template-columns:repeat(3,1fr)}.dashboard-layout,.chart-two,.two-col{grid-template-columns:1fr}}
     @media(max-width:800px){.login-page{grid-template-columns:1fr}.login-info{padding:36px}.login-info h1{font-size:40px}.app{grid-template-columns:1fr}.sidebar{position:relative;min-height:auto}.kpi-grid,.form-grid{grid-template-columns:1fr}.topbar{display:block}.topbar h1{font-size:25px;margin-bottom:6px}}
   </style>
@@ -216,22 +232,21 @@
           <button class="btn" onclick="clearFilter()">Bersihkan</button>
         </div>
         <div class="kpi-grid">
-          <div class="kpi"><div class="label">Total Barang</div><div class="value" id="kpiItems">0</div><div class="small">Jenis barang</div></div>
-          <div class="kpi"><div class="label">Total Stok</div><div class="value" id="kpiStock">0</div><div class="small">Jumlah di gudang</div></div>
-          <div class="kpi"><div class="label">Barang Masuk</div><div class="value" id="kpiIn">0</div><div class="small">Total transaksi masuk</div></div>
-          <div class="kpi"><div class="label">Barang Keluar</div><div class="value" id="kpiOut">0</div><div class="small">Total transaksi keluar</div></div>
-          <div class="kpi"><div class="label">Stok Menipis</div><div class="value" id="kpiLow">0</div><div class="small">Perlu dicek ulang</div></div>
-          <div class="kpi"><div class="label">Nilai Barang</div><div class="value" id="kpiValue">Rp0</div><div class="small">Berdasarkan harga modal</div></div>
+          <div class="kpi"><div class="label">Total Barang</div><div class="value" id="kpiItems">0</div><div class="small">Jumlah jenis barang</div></div>
+          <div class="kpi"><div class="label">Total Stok</div><div class="value" id="kpiStock">0</div><div class="small">Total unit tersedia</div></div>
+          <div class="kpi"><div class="label">Barang Masuk</div><div class="value" id="kpiIn">0</div><div class="small">Akumulasi stok masuk</div></div>
+          <div class="kpi"><div class="label">Barang Keluar</div><div class="value" id="kpiOut">0</div><div class="small">Akumulasi stok keluar</div></div>
+          <div class="kpi"><div class="label">Stok Menipis</div><div class="value" id="kpiLow">0</div><div class="small">Prioritas restock</div></div>
         </div>
         <div class="dashboard-layout">
-          <div class="chart-card"><h3>Barang Masuk dan Keluar</h3><canvas id="movementChart"></canvas></div>
-          <div class="chart-card"><h3>Status Stok</h3><canvas id="statusChart"></canvas></div>
+          <div class="chart-card"><h3>Pergerakan Barang Masuk & Keluar</h3><canvas id="movementChart"></canvas></div>
+          <div class="chart-card"><h3>Komposisi Status Stok</h3><canvas id="statusChart"></canvas></div>
         </div>
         <div class="chart-two">
-          <div class="chart-card chart-small"><h3>Stok per Kategori</h3><canvas id="categoryChart"></canvas></div>
-          <div class="chart-card chart-small"><h3>Penggunaan Rak</h3><canvas id="rackChart"></canvas></div>
+          <div class="chart-card chart-small"><h3>Stok Berdasarkan Kategori</h3><canvas id="categoryChart"></canvas></div>
+          <div class="chart-card chart-small"><h3>Distribusi Barang per Rak</h3><canvas id="rackChart"></canvas></div>
         </div>
-        <div class="table-card"><h3>Barang yang Perlu Dicek</h3><div class="table-wrap"><table><thead><tr><th>Kode</th><th>Nama Barang</th><th>Kategori</th><th>Stok</th><th>Minimum</th><th>Rak</th><th>Status</th></tr></thead><tbody id="lowStockTable"></tbody></table></div></div>
+        <div class="table-card"><h3>Daftar Prioritas Restock</h3><div class="table-wrap"><table><thead><tr><th>Kode</th><th>Nama Barang</th><th>Kategori</th><th>Stok</th><th>Minimum</th><th>Rak</th><th>Status</th></tr></thead><tbody id="lowStockTable"></tbody></table></div></div>
       </section>
 
       <section id="items" class="page">
@@ -647,13 +662,11 @@ function renderDashboard(){
   const totalIn=db.moves.filter(m=>m.movement_type==="IN").reduce((a,m)=>a+m.quantity,0);
   const totalOut=db.moves.filter(m=>m.movement_type==="OUT").reduce((a,m)=>a+m.quantity,0);
   const low=items.filter(i=>statusItem(i)!=="Normal").length;
-  const value=items.reduce((a,i)=>a+i.current_stock*i.purchase_price,0);
   kpiItems.textContent=items.length;
   kpiStock.textContent=num(items.reduce((a,i)=>a+i.current_stock,0));
   kpiIn.textContent=num(totalIn);
   kpiOut.textContent=num(totalOut);
   kpiLow.textContent=low;
-  kpiValue.textContent=rupiah(value);
 
   if(charts.movementChart)charts.movementChart.destroy();
   charts.movementChart=new Chart(movementChart,{type:"bar",data:{labels:["Barang Masuk","Barang Keluar"],datasets:[{label:"Jumlah",data:[totalIn,totalOut],borderWidth:1}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}});
