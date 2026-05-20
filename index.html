@@ -111,21 +111,7 @@
         margin:3px 0;
         font-size:12px;
       }
-      .print-summary{
-        width:56%;
-        border-collapse:collapse;
-        margin-bottom:14px;
-        font-size:12px;
-      }
-      .print-summary td{
-        border:1px solid #777;
-        padding:7px;
-      }
-      .print-summary td:first-child{
-        font-weight:bold;
-        background:#eef3f8!important;
-      }
-      .print-subtitle{
+.print-subtitle{
         font-size:15px;
         margin:12px 0 7px;
       }
@@ -309,7 +295,7 @@ font-size:13px
             <div class="field"><label>Barang</label><select id="outItem" onchange="showStock()" required></select></div>
             <div class="field"><label>Stok Tersedia</label><input id="stockNow" readonly></div>
             <div class="field"><label>Jumlah</label><input id="outQty" type="number" min="1" required></div>
-            <div class="field"><label>Keperluan</label><select id="outPurpose"><option>Penjualan</option><option>Barang Rusak</option><option>Retur Supplier</option><option>Display</option><option>Penyesuaian</option></select></div>
+            <div class="field"><label>Keperluan</label><select id="outPurpose"><option>Penjualan</option><option>Barang Rusak</option><option>Retur Supplier</option><option>Display</option></select></div>
             <button class="btn btn-primary btn-full">Simpan</button>
           </form>
           <div class="card table-wrap"><table><thead><tr><th>Tanggal</th><th>Barang</th><th>Jumlah</th><th>Keperluan</th></tr></thead><tbody id="outTable"></tbody></table></div>
@@ -389,12 +375,7 @@ font-size:13px
             <h1>LAPORAN INVENTORY GUDANG KITCHENWARE</h1>
             <p id="printDate"></p>
           </div>
-
-          <table class="print-summary">
-            <tbody id="printSummary"></tbody>
-          </table>
-
-          <h2 class="print-subtitle">Daftar Stok Barang</h2>
+<h2 class="print-subtitle">Daftar Stok Barang</h2>
           <table class="print-table">
             <thead>
               <tr>
@@ -418,12 +399,12 @@ font-size:13px
             <div>
               <p>Diperiksa Oleh,</p>
               <br><br><br>
-              <b>(__________________________)</b>
+              <span>(__________________________)</span>
             </div>
             <div>
               <p>Disetujui Oleh,</p>
               <br><br><br>
-              <b>(__________________________)</b>
+              <span>(__________________________)</span>
             </div>
           </div>
         </div>
@@ -921,27 +902,17 @@ function exportExcel(){
     ["LAPORAN INVENTORY TOKO KITCHENWARE"],
     ["Tanggal Cetak", now],
     [],
-    ["Ringkasan"],
-    ["", summary.totalBarang],
-    ["", summary.totalStok],
-    ["", summary.totalModal],
-    ["", summary.totalJual],
-    ["", summary.stokMenipis],
-    [],
     ["Kode Barang","Nama Barang","Kategori","Merek","Supplier","Stok","Harga Modal","Harga Jual","Nilai Modal","Nilai Jual","Status"],
     ...rowsData.map(i => [i.kode,i.nama,i.kategori,i.merek,i.supplier,i.stok,i.hargaModal,i.hargaJual,i.nilaiModal,i.nilaiJual,i.status])
   ];
 
   const ws = XLSX.utils.aoa_to_sheet(rows);
-  ws["!merges"] = [
-    { s: { r: 0, c: 0 }, e: { r: 0, c: 10 } },
-    { s: { r: 3, c: 0 }, e: { r: 3, c: 1 } }
-  ];
+  ws["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 10 } }];
   ws["!cols"] = [
     { wch: 14 }, { wch: 30 }, { wch: 22 }, { wch: 16 }, { wch: 28 },
     { wch: 10 }, { wch: 16 }, { wch: 16 }, { wch: 18 }, { wch: 18 }, { wch: 16 }
   ];
-  ws["!autofilter"] = { ref: `A11:K${rows.length}` };
+  ws["!autofilter"] = { ref: `A4:K${rows.length}` };
 
   const titleStyle = { font: { bold: true, sz: 16, color: { rgb: "FFFFFF" } }, fill: { fgColor: { rgb: "1F5F99" } }, alignment: { horizontal: "center", vertical: "center" } };
   const sectionStyle = { font: { bold: true, color: { rgb: "17324D" } }, fill: { fgColor: { rgb: "DDEBFA" } } };
@@ -964,20 +935,17 @@ function exportExcel(){
   };
 
   ws["A1"].s = titleStyle;
-  ws["A4"].s = sectionStyle;
-
-  for (let r = 4; r <= 8; r++) {
-    const a = `A${r + 1}`, b = `B${r + 1}`;
+`, b = `B${r + 1}`;
     if (ws[a]) ws[a].s = { font: { bold: true }, fill: { fgColor: { rgb: "F3F7FC" } }, border: cellBorder };
     if (ws[b]) ws[b].s = { border: cellBorder };
   }
 
   for (let c = 0; c <= 10; c++) {
-    const cell = XLSX.utils.encode_cell({ r: 10, c });
+    const cell = XLSX.utils.encode_cell({ r: 3, c });
     if (ws[cell]) ws[cell].s = headerStyle;
   }
 
-  for (let r = 11; r < rows.length; r++) {
+  for (let r = 4; r < rows.length; r++) {
     for (let c = 0; c <= 10; c++) {
       const cell = XLSX.utils.encode_cell({ r, c });
       if (!ws[cell]) continue;
@@ -998,24 +966,7 @@ function exportExcel(){
       }
     }
   }
-
-  const summaryRows = [
-    ["RINGKASAN LAPORAN INVENTORY"],
-    ["Tanggal Cetak", now],
-    ["", summary.totalBarang],
-    ["", summary.totalStok],
-    ["", summary.totalModal],
-    ["", summary.totalJual],
-    ["", summary.stokMenipis]
-  ];
-
-  const ws2 = XLSX.utils.aoa_to_sheet(summaryRows);
-  ws2["!cols"] = [{ wch: 28 }, { wch: 24 }];
-  ws2["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 1 } }];
-  ws2["A1"].s = titleStyle;
-
-  for (let r = 1; r < summaryRows.length; r++) {
-    const a = `A${r + 1}`, b = `B${r + 1}`;
+`, b = `B${r + 1}`;
     if (ws2[a]) ws2[a].s = { font: { bold: true }, fill: { fgColor: { rgb: "F3F7FC" } }, border: cellBorder };
     if (ws2[b]) {
       ws2[b].s = { border: cellBorder };
@@ -1025,8 +976,7 @@ function exportExcel(){
 
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "Laporan Inventory");
-  XLSX.utils.book_append_sheet(wb, ws2, "Ringkasan");
-  XLSX.writeFile(wb, "laporan_inventory_kitchenware.xlsx");
+XLSX.writeFile(wb, "laporan_inventory_kitchenware.xlsx");
 }
 
 function printReport(){
@@ -1035,16 +985,7 @@ function printReport(){
   const now = new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
 
   printDate.textContent = "Tanggal Cetak: " + now;
-
-  printSummary.innerHTML = `
-    <tr><td></td><td>${summary.totalBarang}</td></tr>
-    <tr><td></td><td>${num(summary.totalStok)}</td></tr>
-    <tr><td></td><td>${rupiah(summary.totalModal)}</td></tr>
-    <tr><td></td><td>${rupiah(summary.totalJual)}</td></tr>
-    <tr><td></td><td>${summary.stokMenipis}</td></tr>
-  `;
-
-  printTable.innerHTML = rows.map(i => `
+printTable.innerHTML = rows.map(i => `
     <tr>
       <td>${i.kode}</td>
       <td>${i.nama}</td>
