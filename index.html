@@ -219,19 +219,8 @@ max-height:280px !important;
 margin:auto;
 display:block;
 }
-
 .chart-box{
 overflow:hidden;
-display:flex;
-flex-direction:column;
-justify-content:center;
-align-items:center;
-}
-
-@media(max-width:768px){
-.chart-box canvas{
-max-height:220px !important;
-}
 }
 
 @media(max-width:1200px){.kpi-grid{grid-template-columns:repeat(3,1fr)}.dashboard-layout,.chart-two,.two-col{grid-template-columns:1fr}}
@@ -656,10 +645,9 @@ function buildMovementRows(type){
 function renderTables(){
   const items=filteredItems();
   itemTable.innerHTML=items.map(i=>`
-    <tr><td>${i.sku}</td><td>${i.name}</td><td>${categoryName(i.category_id)}</td><td>${brandName(i.brand_id)}</td><td>${supplierName(i.supplier_id)}</td><td>${rackCode(i.rack_id)}</td><td>${rupiah(i.purchase_price)}</td><td>${rupiah(i.selling_price)}</td>
-<td>${currentRole==="admin"?`<button class="btn" onclick="openItemModal(${i.id})">Edit</button> <button class="btn btn-danger" onclick="deleteItem(${i.id})">Hapus</button>`:"-"}</td></tr>`).join("");
+    <tr><td>${i.sku}</td><td>${i.name}</td><td>${categoryName(i.category_id)}</td><td>${brandName(i.brand_id)}</td><td>${supplierName(i.supplier_id)}</td><td>${rackCode(i.rack_id)}</td><td>${rupiah(i.purchase_price)}</td><td>${rupiah(i.selling_price)}</td><td>${currentRole==="admin"?`<button class="btn" onclick="openItemModal(${i.id})">Edit</button> <button class="btn btn-danger" onclick="deleteItem(${i.id})">Hapus</button>`:"-"}</td></tr>`).join("");
 
-  reportTable.innerHTML=items.map(i=>`<tr><td>${i.sku}</td><td>${i.name}</td><td>${categoryName(i.category_id)}</td><td>${rupiah(i.current_stock*i.purchase_price)}</td><td>${rupiah(i.current_stock*i.selling_price)}</td><td>${badge(statusItem(i))}</td></tr>`).join("");
+  reportTable.innerHTML=items.map(i=>`<tr><td>${i.sku}</td><td>${i.name}</td><td>${categoryName(i.category_id)}</td><td>${i.current_stock}</td><td>${rupiah(i.current_stock*i.purchase_price)}</td><td>${rupiah(i.current_stock*i.selling_price)}</td><td>${badge(statusItem(i))}</td></tr>`).join("");
 
   const supplierKeyword=(supplierSearch?.value||"").toLowerCase();
   const supplierStatus=(document.getElementById("supplierStatusFilter")?.value||"");
@@ -723,7 +711,9 @@ function renderTables(){
         <td>${i.name}</td>
         <td>${categoryName(i.category_id)}</td>
         <td>${brandName(i.brand_id)}</td>
-        <td>${supplierName(i.supplier_id)}</td><td>${rackCode(i.rack_id)}</td>
+        <td>${supplierName(i.supplier_id)}</td>
+        <td><b>${num(i.current_stock)}</b></td>
+        <td>${rackCode(i.rack_id)}</td>
         <td>${badge(statusItem(i))}</td>
       </tr>
     `)
@@ -745,7 +735,7 @@ function renderTables(){
     <td><b>${num(m.after_stock)}</b></td>
     <td>${m.purpose||"-"}</td>
   </tr>`).join("");
-  lowStockTable.innerHTML=items.filter(i=>statusItem(i)!=="Normal").map(i=>`<tr><td>${i.sku}</td><td>${i.name}</td><td>${categoryName(i.category_id)}</td><td>${i.minimum_stock}</td><td>${rackCode(i.rack_id)}</td><td>${badge(statusItem(i))}</td></tr>`).join("") || `<tr><td colspan="7">Tidak ada barang yang menipis.</td></tr>`;
+  lowStockTable.innerHTML=items.filter(i=>statusItem(i)!=="Normal").map(i=>`<tr><td>${i.sku}</td><td>${i.name}</td><td>${categoryName(i.category_id)}</td><td>${i.current_stock}</td><td>${i.minimum_stock}</td><td>${rackCode(i.rack_id)}</td><td>${badge(statusItem(i))}</td></tr>`).join("") || `<tr><td colspan="7">Tidak ada barang yang menipis.</td></tr>`;
 }
 
 function makeChart(id,type,labels,data,label){
