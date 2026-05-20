@@ -366,6 +366,32 @@ min-width:100%;
   }
 }
 
+
+/* FIX FINAL ukuran panel riwayat barang masuk/keluar */
+#barangMasukPage .content-grid,
+#barangKeluarPage .content-grid,
+.transaction-layout{
+    display:grid !important;
+    grid-template-columns: 360px 1fr !important;
+    gap:24px !important;
+    width:100% !important;
+}
+
+#barangMasukPage .history-card,
+#barangKeluarPage .history-card,
+.transaction-history{
+    width:100% !important;
+    max-width:none !important;
+    min-width:700px !important;
+    flex:1 !important;
+}
+
+#barangMasukPage .history-card table,
+#barangKeluarPage .history-card table,
+.transaction-history table{
+    width:100% !important;
+}
+
 </style>
 </head>
 <body>
