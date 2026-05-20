@@ -225,7 +225,26 @@ overflow:hidden;
 
 @media(max-width:1200px){.kpi-grid{grid-template-columns:repeat(3,1fr)}.dashboard-layout,.chart-two,.two-col{grid-template-columns:1fr}}
     @media(max-width:800px){.login-page{grid-template-columns:1fr}.login-info{padding:36px}.login-info h1{font-size:40px}.app{grid-template-columns:1fr}.sidebar{position:relative;min-height:auto}.kpi-grid,.form-grid{grid-template-columns:1fr}.topbar{display:block}.topbar h1{font-size:25px;margin-bottom:6px}}
-  </style>
+  
+/* FIX ukuran rekap Barang Masuk & Keluar */
+.transaction-layout{
+display:grid;
+grid-template-columns: 360px 1fr !important;
+gap:24px;
+align-items:start;
+}
+
+.transaction-history{
+width:100% !important;
+min-width:0 !important;
+overflow-x:auto;
+}
+
+.transaction-history table{
+min-width:100%;
+}
+
+</style>
 </head>
 <body>
   <div id="loginPage" class="login-page">
