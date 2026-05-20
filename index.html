@@ -226,51 +226,178 @@ overflow:hidden;
 @media(max-width:1200px){.kpi-grid{grid-template-columns:repeat(3,1fr)}.dashboard-layout,.chart-two,.two-col{grid-template-columns:1fr}}
     @media(max-width:800px){.login-page{grid-template-columns:1fr}.login-info{padding:36px}.login-info h1{font-size:40px}.app{grid-template-columns:1fr}.sidebar{position:relative;min-height:auto}.kpi-grid,.form-grid{grid-template-columns:1fr}.topbar{display:block}.topbar h1{font-size:25px;margin-bottom:6px}}
   
-
-/* FIX PASTI: lebarkan panel riwayat Barang Masuk & Barang Keluar */
-#in .two-col,
-#out .two-col{
-  display:grid !important;
-  grid-template-columns: 360px minmax(0, 1fr) !important;
-  gap:24px !important;
-  width:100% !important;
-  align-items:start !important;
+/* FIX ukuran rekap Barang Masuk & Keluar */
+.transaction-layout{
+display:grid;
+grid-template-columns: 360px 1fr !important;
+gap:24px;
+align-items:start;
 }
 
-#in .two-col > .card:first-child,
-#out .two-col > .card:first-child{
-  width:360px !important;
-  max-width:360px !important;
+.transaction-history{
+width:100% !important;
+min-width:0 !important;
+overflow-x:auto;
 }
 
-#in .two-col > .card:nth-child(2),
-#out .two-col > .card:nth-child(2){
-  width:100% !important;
+.transaction-history table{
+min-width:100%;
+}
+
+
+/* FINAL FIX ukuran tabel riwayat Barang Masuk & Barang Keluar */
+#in.page,
+#out.page{
+  width:100%;
+}
+
+#in.page > div,
+#out.page > div{
   max-width:none !important;
+}
+
+#in .two-col,
+#out .two-col,
+#in .form-table,
+#out .form-table,
+#in .transaction-layout,
+#out .transaction-layout{
+  display:grid !important;
+  grid-template-columns: 360px minmax(650px, 1fr) !important;
+  gap:24px !important;
+  align-items:start !important;
+  width:100% !important;
+}
+
+#in .card,
+#out .card{
   min-width:0 !important;
 }
 
-#in .two-col > .card:nth-child(2) table,
-#out .two-col > .card:nth-child(2) table{
+#in .table-wrap,
+#out .table-wrap{
   width:100% !important;
-  min-width:900px !important;
-}
-
-#in .two-col > .card:nth-child(2),
-#out .two-col > .card:nth-child(2){
+  max-width:none !important;
   overflow-x:auto !important;
 }
 
-/* jaga agar kolom halaman tidak membatasi lebar */
-#in.page,
-#out.page{
+#in table,
+#out table{
   width:100% !important;
+  min-width:720px !important;
 }
 
-#in.page .table-wrap,
-#out.page .table-wrap{
+/* kalau struktur bukan grid, paksa card kedua melebar */
+#in.page > .card:nth-of-type(2),
+#out.page > .card:nth-of-type(2){
   width:100% !important;
   max-width:none !important;
+}
+
+
+/* FINAL FIX visualisasi Beranda */
+.dashboard-layout,
+.chart-grid,
+.chart-two{
+  display:grid !important;
+  grid-template-columns: minmax(0, 2fr) minmax(320px, 1fr) !important;
+  gap:18px !important;
+  align-items:stretch !important;
+}
+
+.chart-card,
+.chart-box{
+  height:360px !important;
+  max-height:360px !important;
+  overflow:hidden !important;
+  padding:18px !important;
+  display:flex !important;
+  flex-direction:column !important;
+}
+
+.chart-card h3,
+.chart-box h3{
+  margin:0 0 12px 0 !important;
+  flex:0 0 auto !important;
+}
+
+.chart-card canvas,
+.chart-box canvas{
+  width:100% !important;
+  max-width:100% !important;
+  height:285px !important;
+  max-height:285px !important;
+  display:block !important;
+  margin:0 auto !important;
+}
+
+#statusChart,
+#stockStatusChart,
+#donutChart{
+  width:100% !important;
+  max-width:260px !important;
+  height:260px !important;
+  max-height:260px !important;
+  margin:0 auto !important;
+}
+
+#categoryChart,
+#rackChart{
+  height:250px !important;
+  max-height:250px !important;
+}
+
+@media(max-width:1100px){
+  .dashboard-layout,
+  .chart-grid,
+  .chart-two{
+    grid-template-columns:1fr !important;
+  }
+
+  .chart-card,
+  .chart-box{
+    height:auto !important;
+    max-height:none !important;
+  }
+
+  .chart-card canvas,
+  .chart-box canvas{
+    height:260px !important;
+  }
+}
+
+
+/* FIX KHUSUS panel Barang Masuk & Barang Keluar */
+.movement-grid{
+  display:grid;
+  grid-template-columns: 360px minmax(0, 1fr);
+  gap:24px;
+  align-items:start;
+  width:100%;
+}
+
+.movement-grid > form.card{
+  width:360px;
+}
+
+.movement-grid > .table-wrap{
+  width:100%;
+  max-width:none;
+  overflow-x:auto;
+}
+
+.movement-grid > .table-wrap table{
+  width:100%;
+  min-width:880px;
+}
+
+@media(max-width:900px){
+  .movement-grid{
+    grid-template-columns:1fr;
+  }
+  .movement-grid > form.card{
+    width:100%;
+  }
 }
 
 </style>
@@ -345,7 +472,7 @@ overflow:hidden;
 
       <section id="in" class="page">
         <h2 class="content-title">Barang Masuk</h2>
-        <div class="rekap-grid">
+        <div class="movement-grid">
           <form class="card" onsubmit="saveMove(event,'IN')">
             <div class="field"><label>Tanggal</label><input id="inDate" type="date" required></div>
             <div class="field"><label>Barang</label><select id="inItem" required></select></div>
@@ -359,7 +486,7 @@ overflow:hidden;
 
       <section id="out" class="page">
         <h2 class="content-title">Barang Keluar</h2>
-        <div class="rekap-grid">
+        <div class="movement-grid">
           <form class="card" onsubmit="saveMove(event,'OUT')">
             <div class="field"><label>Tanggal</label><input id="outDate" type="date" required></div>
             <div class="field"><label>Barang</label><select id="outItem" onchange="showStock()" required></select></div>
