@@ -168,7 +168,51 @@
       box-shadow:0 10px 24px rgba(15,23,42,.08)!important;
     }
 
-    @media(max-width:1200px){.kpi-grid{grid-template-columns:repeat(3,1fr)}.dashboard-layout,.chart-two,.two-col{grid-template-columns:1fr}}
+    
+.rekap-grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:22px;
+margin-bottom:24px;
+}
+.rekap-card{
+background:linear-gradient(145deg,#ffffff,#f5f9ff);
+border-radius:20px;
+padding:24px;
+box-shadow:0 10px 25px rgba(15,23,42,.08);
+border:1px solid #dbe7f3;
+}
+.rekap-card h3{
+margin-bottom:18px;
+color:#17324d;
+font-size:30px;
+}
+.rekap-item{
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:14px 16px;
+margin-bottom:12px;
+border-radius:14px;
+background:#fff;
+border:1px solid #e2e8f0;
+transition:.2s;
+font-weight:600;
+}
+.rekap-item:hover{
+transform:translateY(-2px);
+box-shadow:0 6px 16px rgba(15,23,42,.08);
+}
+.rekap-badge{
+background:#1f5f99;
+color:#fff;
+padding:6px 14px;
+border-radius:999px;
+font-size:13px;
+font-weight:700;
+}
+
+@media(max-width:1200px){.kpi-grid{grid-template-columns:repeat(3,1fr)}.dashboard-layout,.chart-two,.two-col{grid-template-columns:1fr}}
     @media(max-width:800px){.login-page{grid-template-columns:1fr}.login-info{padding:36px}.login-info h1{font-size:40px}.app{grid-template-columns:1fr}.sidebar{position:relative;min-height:auto}.kpi-grid,.form-grid{grid-template-columns:1fr}.topbar{display:block}.topbar h1{font-size:25px;margin-bottom:6px}}
   </style>
 </head>
@@ -242,7 +286,7 @@
 
       <section id="in" class="page">
         <h2 class="content-title">Barang Masuk</h2>
-        <div class="two-col">
+        <div class="rekap-grid">
           <form class="card" onsubmit="saveMove(event,'IN')">
             <div class="field"><label>Tanggal</label><input id="inDate" type="date" required></div>
             <div class="field"><label>Barang</label><select id="inItem" required></select></div>
@@ -256,7 +300,7 @@
 
       <section id="out" class="page">
         <h2 class="content-title">Barang Keluar</h2>
-        <div class="two-col">
+        <div class="rekap-grid">
           <form class="card" onsubmit="saveMove(event,'OUT')">
             <div class="field"><label>Tanggal</label><input id="outDate" type="date" required></div>
             <div class="field"><label>Barang</label><select id="outItem" onchange="showStock()" required></select></div>
@@ -308,13 +352,13 @@
           <input id="masterSearch" placeholder="Cari barang, kategori, atau merek..." oninput="renderAll()">
         </div>
 
-        <div class="two-col">
-          <div class="card"><h3>Rekap Kategori</h3><br><div id="categoryList"></div></div>
-          <div class="card"><h3>Rekap Merek</h3><br><div id="brandList"></div></div>
+        <div class="rekap-grid">
+          <div class="rekap-card"><h3>Rekap Kategori</h3><div id="categoryList"></div></div>
+          <div class="rekap-card"><h3>Rekap Merek</h3><div id="brandList"></div></div>
         </div>
 
         <div class="card table-wrap" style="margin-top:14px">
-          <h3>Barang Sesuai Pencarian</h3>
+          
           <table>
             <thead>
               <tr>
@@ -602,7 +646,7 @@ function renderTables(){
     .map(c => {
       const total = masterItems.filter(i => i.category_id === c.id).length;
       if(total === 0 && masterKeyword) return "";
-      return `<p style="padding:10px;border-bottom:1px solid #e5edf5"><b>${c.name}</b> — ${total} barang</p>`;
+      return `<div class="rekap-item"><span>${c.name}</span><span class="rekap-badge">${total} barang</span></div>`;
     })
     .join("") || `<p style="padding:10px;color:#64748b">Data kategori tidak ditemukan.</p>`;
 
@@ -610,7 +654,7 @@ function renderTables(){
     .map(b => {
       const total = masterItems.filter(i => i.brand_id === b.id).length;
       if(total === 0 && masterKeyword) return "";
-      return `<p style="padding:10px;border-bottom:1px solid #e5edf5"><b>${b.name}</b> — ${total} barang</p>`;
+      return `<div class="rekap-item"><span>${b.name}</span><span class="rekap-badge">${total} barang</span></div>`;
     })
     .join("") || `<p style="padding:10px;color:#64748b">Data merek tidak ditemukan.</p>`;
 
