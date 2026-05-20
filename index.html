@@ -212,6 +212,28 @@ font-size:13px;
 font-weight:700;
 }
 
+
+.chart-box canvas{
+max-width:100% !important;
+max-height:280px !important;
+margin:auto;
+display:block;
+}
+
+.chart-box{
+overflow:hidden;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+}
+
+@media(max-width:768px){
+.chart-box canvas{
+max-height:220px !important;
+}
+}
+
 @media(max-width:1200px){.kpi-grid{grid-template-columns:repeat(3,1fr)}.dashboard-layout,.chart-two,.two-col{grid-template-columns:1fr}}
     @media(max-width:800px){.login-page{grid-template-columns:1fr}.login-info{padding:36px}.login-info h1{font-size:40px}.app{grid-template-columns:1fr}.sidebar{position:relative;min-height:auto}.kpi-grid,.form-grid{grid-template-columns:1fr}.topbar{display:block}.topbar h1{font-size:25px;margin-bottom:6px}}
   </style>
@@ -281,7 +303,7 @@ font-weight:700;
 
       <section id="items" class="page">
         <div class="toolbar"><h2 class="content-title">Data Barang</h2><button id="btnAddItem" class="btn btn-primary" onclick="openItemModal()">Tambah Barang</button></div>
-        <div class="card table-wrap"><table><thead><tr><th>Kode</th><th>Nama Barang</th><th>Kategori</th><th>Merek</th><th>Supplier</th><th>Stok Saat Ini</th><th>Rak</th><th>Harga Modal</th><th>Harga Jual</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="itemTable"></tbody></table></div>
+        <div class="card table-wrap"><table><thead><tr><th>Kode</th><th>Nama Barang</th><th>Kategori</th><th>Merek</th><th>Supplier</th><th>Rak</th><th>Harga Modal</th><th>Harga Jual</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="itemTable"></tbody></table></div>
       </section>
 
       <section id="in" class="page">
