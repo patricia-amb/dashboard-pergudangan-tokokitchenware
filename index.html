@@ -212,7 +212,7 @@ font-size:13px
       <p>Toko Kitchenware menjual berbagai perlengkapan dapur seperti panci, wajan, alat makan, rak piring, toples, pisau dapur, blender, rice cooker, dan kebutuhan rumah tangga lainnya. Dashboard ini dibuat untuk membantu pencatatan barang agar data stok, barang masuk, barang keluar, supplier, merek, dan lokasi rak lebih mudah dikelola.</p>
     </div>
     <div class="login-form-wrap">
-      <form class="login-card" onsubmit="login(event)">
+      <form class="login-card" onsubmit="return login(event)">
         <h2>Login</h2>
         <div class="field"><label>Nama Pengguna</label><input id="username" placeholder="Masukkan nama pengguna"></div>
         <div class="field"><label>Password</label><input id="password" type="password" placeholder="Masukkan password"></div>
@@ -515,19 +515,51 @@ async function loadData(){
   renderAll();
 }
 
+
+// FINAL LOGIN FIX
 function login(e){
-  e.preventDefault();
-  const acc=accounts[password.value.trim()];
-  if(!acc){loginError.classList.remove("hide");return}
-  currentRole=acc.key;
-  roleName.textContent=acc.role;
-  userNameText.textContent=username.value.trim()||acc.name;
-  loginError.classList.add("hide");
-  loginPage.classList.add("hide");
-  app.classList.remove("hide");
-  applyAccess();
-  loadData();
+  if(e) e.preventDefault();
+
+  const usernameInput = document.getElementById("username");
+  const passwordInput = document.getElementById("password");
+  const roleInput = document.getElementById("role");
+
+  const username = usernameInput ? usernameInput.value.trim() : "";
+  const password = passwordInput ? passwordInput.value.trim() : "";
+  const role = roleInput ? roleInput.value : "admin";
+
+  const passwords = {
+    admin: "admin123",
+    manager: "manager123",
+    owner: "owner123",
+    manajer: "manager123",
+    pemilik: "owner123"
+  };
+
+  const selectedRole = role || "admin";
+  const expected = passwords[selectedRole] || passwords.admin;
+
+  if(password !== expected){
+    alert("Password salah. Gunakan admin123 untuk Admin, manager123 untuk Manajer, atau owner123 untuk Pemilik.");
+    return false;
+  }
+
+  currentRole = selectedRole;
+  currentUser = username || "Patricia";
+
+  const loginPage = document.getElementById("loginPage");
+  const app = document.getElementById("app");
+
+  if(loginPage) loginPage.classList.add("hide");
+  if(app) app.classList.remove("hide");
+
+  if(typeof applyAccess === "function") applyAccess();
+  if(typeof loadData === "function") loadData();
+  if(typeof renderAll === "function") renderAll();
+
+  return false;
 }
+
 function logout(){app.classList.add("hide");loginPage.classList.remove("hide");password.value=""}
 function applyAccess(){
   const isAdmin=currentRole==="admin";
@@ -896,9 +928,7 @@ function buildReportSummary(rows){
 function exportExcel(){
   const rowsData = buildReportRows();
   const now = new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
-  const summary = buildReportSummary(rowsData);
-
-  const rows = [
+const rows = [
     ["LAPORAN INVENTORY TOKO KITCHENWARE"],
     ["Tanggal Cetak", now],
     [],
@@ -981,8 +1011,7 @@ XLSX.writeFile(wb, "laporan_inventory_kitchenware.xlsx");
 
 function printReport(){
   const rows = buildReportRows();
-  const summary = buildReportSummary(rows);
-  const now = new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
+const now = new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
 
   printDate.textContent = "Tanggal Cetak: " + now;
 printTable.innerHTML = rows.map(i => `
