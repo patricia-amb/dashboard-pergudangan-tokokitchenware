@@ -244,6 +244,128 @@ overflow-x:auto;
 min-width:100%;
 }
 
+
+/* FINAL FIX ukuran tabel riwayat Barang Masuk & Barang Keluar */
+#in.page,
+#out.page{
+  width:100%;
+}
+
+#in.page > div,
+#out.page > div{
+  max-width:none !important;
+}
+
+#in .two-col,
+#out .two-col,
+#in .form-table,
+#out .form-table,
+#in .transaction-layout,
+#out .transaction-layout{
+  display:grid !important;
+  grid-template-columns: 360px minmax(650px, 1fr) !important;
+  gap:24px !important;
+  align-items:start !important;
+  width:100% !important;
+}
+
+#in .card,
+#out .card{
+  min-width:0 !important;
+}
+
+#in .table-wrap,
+#out .table-wrap{
+  width:100% !important;
+  max-width:none !important;
+  overflow-x:auto !important;
+}
+
+#in table,
+#out table{
+  width:100% !important;
+  min-width:720px !important;
+}
+
+/* kalau struktur bukan grid, paksa card kedua melebar */
+#in.page > .card:nth-of-type(2),
+#out.page > .card:nth-of-type(2){
+  width:100% !important;
+  max-width:none !important;
+}
+
+
+/* FINAL FIX visualisasi Beranda */
+.dashboard-layout,
+.chart-grid,
+.chart-two{
+  display:grid !important;
+  grid-template-columns: minmax(0, 2fr) minmax(320px, 1fr) !important;
+  gap:18px !important;
+  align-items:stretch !important;
+}
+
+.chart-card,
+.chart-box{
+  height:360px !important;
+  max-height:360px !important;
+  overflow:hidden !important;
+  padding:18px !important;
+  display:flex !important;
+  flex-direction:column !important;
+}
+
+.chart-card h3,
+.chart-box h3{
+  margin:0 0 12px 0 !important;
+  flex:0 0 auto !important;
+}
+
+.chart-card canvas,
+.chart-box canvas{
+  width:100% !important;
+  max-width:100% !important;
+  height:285px !important;
+  max-height:285px !important;
+  display:block !important;
+  margin:0 auto !important;
+}
+
+#statusChart,
+#stockStatusChart,
+#donutChart{
+  width:100% !important;
+  max-width:260px !important;
+  height:260px !important;
+  max-height:260px !important;
+  margin:0 auto !important;
+}
+
+#categoryChart,
+#rackChart{
+  height:250px !important;
+  max-height:250px !important;
+}
+
+@media(max-width:1100px){
+  .dashboard-layout,
+  .chart-grid,
+  .chart-two{
+    grid-template-columns:1fr !important;
+  }
+
+  .chart-card,
+  .chart-box{
+    height:auto !important;
+    max-height:none !important;
+  }
+
+  .chart-card canvas,
+  .chart-box canvas{
+    height:260px !important;
+  }
+}
+
 </style>
 </head>
 <body>
