@@ -281,7 +281,7 @@ font-weight:700;
 
       <section id="items" class="page">
         <div class="toolbar"><h2 class="content-title">Data Barang</h2><button id="btnAddItem" class="btn btn-primary" onclick="openItemModal()">Tambah Barang</button></div>
-        <div class="card table-wrap"><table><thead><tr><th>Kode</th><th>Nama Barang</th><th>Kategori</th><th>Merek</th><th>Supplier</th><th>Stok</th><th>Rak</th><th>Harga Modal</th><th>Harga Jual</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="itemTable"></tbody></table></div>
+        <div class="card table-wrap"><table><thead><tr><th>Kode</th><th>Nama Barang</th><th>Kategori</th><th>Merek</th><th>Supplier</th><th>Stok Saat Ini</th><th>Rak</th><th>Harga Modal</th><th>Harga Jual</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="itemTable"></tbody></table></div>
       </section>
 
       <section id="in" class="page">
@@ -294,7 +294,7 @@ font-weight:700;
             <div class="field"><label>No. Faktur</label><input id="inInvoice" placeholder="Contoh: INV-001"></div>
             <button class="btn btn-primary btn-full">Simpan</button>
           </form>
-          <div class="card table-wrap"><table><thead><tr><th>Tanggal</th><th>Barang</th><th>Jumlah</th><th>Faktur</th></tr></thead><tbody id="inTable"></tbody></table></div>
+          <div class="card table-wrap"><table><thead><tr><th>Tanggal</th><th>Barang</th><th>Stok Sebelum</th><th>Jumlah Masuk</th><th>Total Stok Sekarang</th><th>Faktur</th></tr></thead><tbody id="inTable"></tbody></table></div>
         </div>
       </section>
 
@@ -309,7 +309,7 @@ font-weight:700;
             <div class="field"><label>Keperluan</label><select id="outPurpose"><option>Penjualan</option><option>Barang Rusak</option><option>Retur Supplier</option><option>Display</option></select></div>
             <button class="btn btn-primary btn-full">Simpan</button>
           </form>
-          <div class="card table-wrap"><table><thead><tr><th>Tanggal</th><th>Barang</th><th>Jumlah</th><th>Keperluan</th></tr></thead><tbody id="outTable"></tbody></table></div>
+          <div class="card table-wrap"><table><thead><tr><th>Tanggal</th><th>Barang</th><th>Stok Sebelum</th><th>Jumlah Keluar</th><th>Total Stok Sekarang</th><th>Keperluan</th></tr></thead><tbody id="outTable"></tbody></table></div>
         </div>
       </section>
 
@@ -433,7 +433,6 @@ font-weight:700;
         <div><label>Merek</label><select id="brand" required></select></div>
         <div><label>Supplier</label><select id="supplier" required></select></div>
         <div><label>Lokasi Rak</label><select id="rack" required></select></div>
-        <div><label>Stok</label><input id="stock" type="number" min="0" required></div>
         <div><label>Minimum Stok</label><input id="minStock" type="number" min="0" required></div>
         <div><label>Harga Modal</label><input id="buy" type="number" min="0" required></div>
         <div><label>Harga Jual</label><input id="sell" type="number" min="0" required></div>
@@ -594,6 +593,44 @@ function filteredItems(){
 }
 function renderAll(){setupSelects();renderTables();renderDashboard();showStock()}
 
+
+function buildMovementRows(type){
+  const currentByProduct = {};
+  db.items.forEach(i => {
+    currentByProduct[i.id] = Number(i.current_stock || 0);
+  });
+
+  const reversed = db.moves.slice().sort((a,b) => Number(b.id || 0) - Number(a.id || 0));
+  const movementState = {};
+
+  reversed.forEach(m => {
+    const productId = m.product_id;
+    const qty = Number(m.quantity || 0);
+    const after = currentByProduct[productId] ?? 0;
+    let before = after;
+
+    if(m.movement_type === "IN"){
+      before = after - qty;
+      currentByProduct[productId] = before;
+    } else {
+      before = after + qty;
+      currentByProduct[productId] = before;
+    }
+
+    movementState[m.id] = { before, after };
+  });
+
+  return db.moves
+    .filter(m => m.movement_type === type)
+    .slice()
+    .sort((a,b) => Number(b.id || 0) - Number(a.id || 0))
+    .map(m => ({
+      ...m,
+      before_stock: movementState[m.id]?.before ?? 0,
+      after_stock: movementState[m.id]?.after ?? 0
+    }));
+}
+
 function renderTables(){
   const items=filteredItems();
   itemTable.innerHTML=items.map(i=>`
@@ -673,8 +710,22 @@ function renderTables(){
     `)
     .join("") || `<tr><td colspan="8">Tidak ada barang yang sesuai dengan pencarian.</td></tr>`;
 
-  inTable.innerHTML=db.moves.filter(m=>m.movement_type==="IN").slice().reverse().map(m=>`<tr><td>${m.movement_date}</td><td>${getItemName(m.product_id)}</td><td><span class="badge green">+${m.quantity}</span></td><td>${m.invoice_number||"-"}</td></tr>`).join("");
-  outTable.innerHTML=db.moves.filter(m=>m.movement_type==="OUT").slice().reverse().map(m=>`<tr><td>${m.movement_date}</td><td>${getItemName(m.product_id)}</td><td><span class="badge red">-${m.quantity}</span></td><td>${m.purpose||"-"}</td></tr>`).join("");
+  inTable.innerHTML=buildMovementRows("IN").map(m=>`<tr>
+    <td>${m.movement_date}</td>
+    <td>${getItemName(m.product_id)}</td>
+    <td>${num(m.before_stock)}</td>
+    <td><span class="badge green">+${m.quantity}</span></td>
+    <td><b>${num(m.after_stock)}</b></td>
+    <td>${m.invoice_number||"-"}</td>
+  </tr>`).join("");
+  outTable.innerHTML=buildMovementRows("OUT").map(m=>`<tr>
+    <td>${m.movement_date}</td>
+    <td>${getItemName(m.product_id)}</td>
+    <td>${num(m.before_stock)}</td>
+    <td><span class="badge red">-${m.quantity}</span></td>
+    <td><b>${num(m.after_stock)}</b></td>
+    <td>${m.purpose||"-"}</td>
+  </tr>`).join("");
   lowStockTable.innerHTML=items.filter(i=>statusItem(i)!=="Normal").map(i=>`<tr><td>${i.sku}</td><td>${i.name}</td><td>${categoryName(i.category_id)}</td><td>${i.current_stock}</td><td>${i.minimum_stock}</td><td>${rackCode(i.rack_id)}</td><td>${badge(statusItem(i))}</td></tr>`).join("") || `<tr><td colspan="7">Tidak ada barang yang menipis.</td></tr>`;
 }
 
@@ -722,9 +773,9 @@ function openItemModal(id){
   editId.value=id||""; modalTitle.textContent=id?"Edit Barang":"Tambah Barang";
   if(id){
     const i=db.items.find(x=>x.id===id);
-    itemName.value=i.name; cat.value=i.category_id; brand.value=i.brand_id; supplier.value=i.supplier_id; rack.value=i.rack_id; stock.value=i.current_stock; minStock.value=i.minimum_stock; buy.value=i.purchase_price; sell.value=i.selling_price;
+    itemName.value=i.name; cat.value=i.category_id; brand.value=i.brand_id; supplier.value=i.supplier_id; rack.value=i.rack_id; minStock.value=i.minimum_stock; buy.value=i.purchase_price; sell.value=i.selling_price;
   }else{
-    [itemName,stock,minStock,buy,sell].forEach(x=>x.value="");
+    [itemName,minStock,buy,sell].forEach(x=>x.value="");
   }
 }
 function closeItemModal(){itemModal.classList.add("hide")}
@@ -737,12 +788,15 @@ async function saveItem(e){
     brand_id:Number(brand.value),
     supplier_id:Number(supplier.value),
     rack_id:Number(rack.value),
-    current_stock:Number(stock.value),
     minimum_stock:Number(minStock.value),
     unit:"pcs",
     purchase_price:Number(buy.value),
     selling_price:Number(sell.value)
   };
+
+  if(!id){
+    payload.current_stock = 0;
+  }
   if(id){
     const {error}=await sb.from("products").update(payload).eq("id",id);
     if(error){toastMsg("Gagal menyimpan data"); console.error(error); return;}
