@@ -182,7 +182,40 @@
       box-shadow:0 10px 24px rgba(15,23,42,.08)!important;
     }
 
-    @media(max-width:1200px){.kpi-grid{grid-template-columns:repeat(3,1fr)}.dashboard-layout,.chart-two,.two-col{grid-template-columns:1fr}}
+    
+.rekap-grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:18px;
+margin-top:14px
+}
+.rekap-card{
+background:linear-gradient(145deg,#ffffff,#f4f8fc);
+border-radius:18px;
+padding:18px;
+box-shadow:0 8px 22px rgba(15,23,42,.06);
+border:1px solid #dbe7f3
+}
+.rekap-item{
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:12px 14px;
+margin-bottom:10px;
+background:#fff;
+border-radius:12px;
+border:1px solid #e2e8f0;
+font-weight:600
+}
+.rekap-badge{
+background:#1d4f91;
+color:#fff;
+padding:5px 12px;
+border-radius:999px;
+font-size:13px
+}
+
+@media(max-width:1200px){.kpi-grid{grid-template-columns:repeat(3,1fr)}.dashboard-layout,.chart-two,.two-col{grid-template-columns:1fr}}
     @media(max-width:800px){.login-page{grid-template-columns:1fr}.login-info{padding:36px}.login-info h1{font-size:40px}.app{grid-template-columns:1fr}.sidebar{position:relative;min-height:auto}.kpi-grid,.form-grid{grid-template-columns:1fr}.topbar{display:block}.topbar h1{font-size:25px;margin-bottom:6px}}
   </style>
 </head>
@@ -256,7 +289,7 @@
 
       <section id="in" class="page">
         <h2 class="content-title">Barang Masuk</h2>
-        <div class="two-col">
+        <div class="rekap-grid">
           <form class="card" onsubmit="saveMove(event,'IN')">
             <div class="field"><label>Tanggal</label><input id="inDate" type="date" required></div>
             <div class="field"><label>Barang</label><select id="inItem" required></select></div>
@@ -270,7 +303,7 @@
 
       <section id="out" class="page">
         <h2 class="content-title">Barang Keluar</h2>
-        <div class="two-col">
+        <div class="rekap-grid">
           <form class="card" onsubmit="saveMove(event,'OUT')">
             <div class="field"><label>Tanggal</label><input id="outDate" type="date" required></div>
             <div class="field"><label>Barang</label><select id="outItem" onchange="showStock()" required></select></div>
@@ -322,13 +355,13 @@
           <input id="masterSearch" placeholder="Cari barang, kategori, atau merek..." oninput="renderAll()">
         </div>
 
-        <div class="two-col">
-          <div class="card"><h3>Rekap Kategori</h3><br><div id="categoryList"></div></div>
-          <div class="card"><h3>Rekap Merek</h3><br><div id="brandList"></div></div>
+        <div class="rekap-grid">
+          <div class="rekap-card"><h3>Rekap Kategori</h3><br><div id="categoryList"></div></div>
+          <div class="rekap-card"><h3>Rekap Merek</h3><br><div id="brandList"></div></div>
         </div>
 
         <div class="card table-wrap" style="margin-top:14px">
-          <h3>Barang Sesuai Pencarian</h3>
+          
           <table>
             <thead>
               <tr>
@@ -385,12 +418,12 @@
             <div>
               <p>Diperiksa Oleh,</p>
               <br><br><br>
-              <b>Admin Gudang</b>
+              <b>(__________________________)</b>
             </div>
             <div>
               <p>Disetujui Oleh,</p>
               <br><br><br>
-              <b>Pemilik Toko</b>
+              <b>(__________________________)</b>
             </div>
           </div>
         </div>
@@ -466,7 +499,7 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 let currentRole="admin";
 let charts={};
 let db={categories:[],brands:[],racks:[],suppliers:[],items:[],moves:[]};
-const accounts={"admin123":{role:"Admin",name:"Petugas Gudang",key:"admin"},"manager123":{role:"Manajer",name:"Manajer Toko",key:"manager"},"owner123":{role:"Pemilik",name:"Pemilik Toko",key:"owner"}};
+const accounts={"admin123":{role:"Admin",name:"Petugas Gudang",key:"admin"},"manager123":{role:"Manajer",name:"Manajer Toko",key:"manager"},"owner123":{role:"Pemilik",name:"(__________________________)",key:"owner"}};
 
 function rupiah(n){return "Rp"+new Intl.NumberFormat("id-ID").format(n||0)}
 function num(n){return new Intl.NumberFormat("id-ID").format(n||0)}
@@ -621,7 +654,7 @@ function renderTables(){
     .map(c => {
       const total = masterItems.filter(i => i.category_id === c.id).length;
       if(total === 0 && masterKeyword) return "";
-      return `<p style="padding:10px;border-bottom:1px solid #e5edf5"><b>${c.name}</b> — ${total} barang</p>`;
+      return `<div class="rekap-item"><span>${c.name}</span><span class="rekap-badge">${total} barang</span></div>`;
     })
     .join("") || `<p style="padding:10px;color:#64748b">Data kategori tidak ditemukan.</p>`;
 
@@ -629,7 +662,7 @@ function renderTables(){
     .map(b => {
       const total = masterItems.filter(i => i.brand_id === b.id).length;
       if(total === 0 && masterKeyword) return "";
-      return `<p style="padding:10px;border-bottom:1px solid #e5edf5"><b>${b.name}</b> — ${total} barang</p>`;
+      return `<div class="rekap-item"><span>${b.name}</span><span class="rekap-badge">${total} barang</span></div>`;
     })
     .join("") || `<p style="padding:10px;color:#64748b">Data merek tidak ditemukan.</p>`;
 
@@ -889,11 +922,11 @@ function exportExcel(){
     ["Tanggal Cetak", now],
     [],
     ["Ringkasan"],
-    ["Total Jenis Barang", summary.totalBarang],
-    ["Total Stok Gudang", summary.totalStok],
-    ["Total Nilai Modal", summary.totalModal],
-    ["Total Estimasi Nilai Jual", summary.totalJual],
-    ["Barang Menipis/Habis", summary.stokMenipis],
+    ["", summary.totalBarang],
+    ["", summary.totalStok],
+    ["", summary.totalModal],
+    ["", summary.totalJual],
+    ["", summary.stokMenipis],
     [],
     ["Kode Barang","Nama Barang","Kategori","Merek","Supplier","Stok","Harga Modal","Harga Jual","Nilai Modal","Nilai Jual","Status"],
     ...rowsData.map(i => [i.kode,i.nama,i.kategori,i.merek,i.supplier,i.stok,i.hargaModal,i.hargaJual,i.nilaiModal,i.nilaiJual,i.status])
@@ -969,11 +1002,11 @@ function exportExcel(){
   const summaryRows = [
     ["RINGKASAN LAPORAN INVENTORY"],
     ["Tanggal Cetak", now],
-    ["Total Jenis Barang", summary.totalBarang],
-    ["Total Stok Gudang", summary.totalStok],
-    ["Total Nilai Modal", summary.totalModal],
-    ["Total Estimasi Nilai Jual", summary.totalJual],
-    ["Barang Menipis/Habis", summary.stokMenipis]
+    ["", summary.totalBarang],
+    ["", summary.totalStok],
+    ["", summary.totalModal],
+    ["", summary.totalJual],
+    ["", summary.stokMenipis]
   ];
 
   const ws2 = XLSX.utils.aoa_to_sheet(summaryRows);
@@ -1004,11 +1037,11 @@ function printReport(){
   printDate.textContent = "Tanggal Cetak: " + now;
 
   printSummary.innerHTML = `
-    <tr><td>Total Jenis Barang</td><td>${summary.totalBarang}</td></tr>
-    <tr><td>Total Stok Gudang</td><td>${num(summary.totalStok)}</td></tr>
-    <tr><td>Total Nilai Modal</td><td>${rupiah(summary.totalModal)}</td></tr>
-    <tr><td>Total Estimasi Nilai Jual</td><td>${rupiah(summary.totalJual)}</td></tr>
-    <tr><td>Barang Menipis/Habis</td><td>${summary.stokMenipis}</td></tr>
+    <tr><td></td><td>${summary.totalBarang}</td></tr>
+    <tr><td></td><td>${num(summary.totalStok)}</td></tr>
+    <tr><td></td><td>${rupiah(summary.totalModal)}</td></tr>
+    <tr><td></td><td>${rupiah(summary.totalJual)}</td></tr>
+    <tr><td></td><td>${summary.stokMenipis}</td></tr>
   `;
 
   printTable.innerHTML = rows.map(i => `
