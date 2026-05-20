@@ -67,7 +67,7 @@
     .chart-card,.table-card,.card{background:white;border:1px solid var(--line);border-radius:12px;padding:16px;box-shadow:var(--shadow)}
     .chart-card{height:330px}
     .chart-card h3,.table-card h3,.card h3{font-family:Georgia,serif;font-weight:500;color:#17324d;margin-bottom:12px;font-size:20px}
-    .chart-two{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+    .chart-two{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:14px}
     .chart-small{height:290px} canvas{max-height:100%}
     .table-wrap{overflow:auto} table{width:100%;border-collapse:collapse;min-width:850px;background:white}
     th,td{border-bottom:1px solid #e5edf5;padding:10px;text-align:left;font-size:14px;vertical-align:middle}
@@ -171,7 +171,7 @@
     
 .rekap-grid{
 display:grid;
-grid-template-columns:1fr 1fr;
+grid-template-columns:repeat(3,1fr);
 gap:22px;
 margin-bottom:24px;
 }
@@ -254,7 +254,7 @@ overflow:hidden;
         <button data-page="in" onclick="openPage('in',this)">Barang Masuk</button>
         <button data-page="out" onclick="openPage('out',this)">Barang Keluar</button>
         <button data-page="sup" onclick="openPage('sup',this)">Supplier</button>
-        <button data-page="master" onclick="openPage('master',this)">Kategori & Merek</button>
+        <button data-page="master" onclick="openPage('master',this)">Referensi Barang</button>
         <button data-page="report" onclick="openPage('report',this)">Laporan</button>
         <button onclick="logout()">Keluar</button>
       </div>
@@ -357,15 +357,16 @@ overflow:hidden;
       </section>
 
       <section id="master" class="page">
-        <h2 class="content-title">Kategori & Merek</h2>
+        <h2 class="content-title">Referensi Barang</h2>
 
         <div class="filters">
-          <input id="masterSearch" placeholder="Cari barang, kategori, atau merek..." oninput="renderAll()">
+          <input id="masterSearch" placeholder="Cari barang, kategori, merek, atau supplier..." oninput="renderAll()">
         </div>
 
         <div class="rekap-grid">
           <div class="rekap-card"><h3>Rekap Kategori</h3><div id="categoryList"></div></div>
           <div class="rekap-card"><h3>Rekap Merek</h3><div id="brandList"></div></div>
+          <div class="rekap-card"><h3>Rekap Supplier</h3><div id="supplierRecapList"></div></div>
         </div>
 
         <div class="card table-wrap" style="margin-top:14px">
@@ -441,8 +442,10 @@ overflow:hidden;
       <div class="form-grid">
         <div><label>Nama Barang</label><input id="itemName" required></div>
         <div><label>Kategori</label><select id="cat" required></select></div>
-        <div><label>Merek</label><select id="brand" required></select></div>
-        <div><label>Supplier</label><select id="supplier" required></select></div>
+        <div><label>Merek</label><input id="brand" list="brandOptions" required placeholder="Ketik atau pilih merek"></div>
+        <datalist id="brandOptions"></datalist>
+        <div><label>Supplier</label><input id="supplier" list="supplierOptions" required placeholder="Ketik atau pilih supplier"></div>
+        <datalist id="supplierOptions"></datalist>
         <div><label>Lokasi Rak</label><select id="rack" required></select></div>
         <div><label>Minimum Stok</label><input id="minStock" type="number" min="0" required></div>
         <div><label>Harga Modal</label><input id="buy" type="number" min="0" required></div>
@@ -584,8 +587,8 @@ function setupSelects(){
   fillSelect(fBrand,db.brands,"Semua Merek","name");
   fillSelect(fSupplier,db.suppliers,"Semua Supplier","name");
   fillSelect(cat,db.categories,"Pilih kategori","name");
-  fillSelect(brand,db.brands,"Pilih merek","name");
-  fillSelect(supplier,db.suppliers,"Pilih supplier","name");
+  brandOptions.innerHTML=db.brands.map(b=>`<option value="${b.name}"></option>`).join("");
+  supplierOptions.innerHTML=db.suppliers.map(s=>`<option value="${s.name}"></option>`).join("");
   fillSelect(rack,db.racks,"Pilih rak","code");
   fillItem(inItem); fillItem(outItem);
   if(!inDate.value)inDate.value=today();
@@ -679,12 +682,14 @@ function renderTables(){
     const nama = (i.name || "").toLowerCase();
     const kategori = categoryName(i.category_id).toLowerCase();
     const merek = brandName(i.brand_id).toLowerCase();
+    const supplierText = supplierName(i.supplier_id).toLowerCase();
 
     return (
       !masterKeyword ||
       nama.includes(masterKeyword) ||
       kategori.includes(masterKeyword) ||
-      merek.includes(masterKeyword)
+      merek.includes(masterKeyword) ||
+      supplierText.includes(masterKeyword)
     );
   });
 
@@ -703,6 +708,16 @@ function renderTables(){
       return `<div class="rekap-item"><span>${b.name}</span><span class="rekap-badge">${total} barang</span></div>`;
     })
     .join("") || `<p style="padding:10px;color:#64748b">Data merek tidak ditemukan.</p>`;
+
+  if(document.getElementById("supplierRecapList")){
+    supplierRecapList.innerHTML = db.suppliers
+      .map(s => {
+        const total = masterItems.filter(i => i.supplier_id === s.id).length;
+        if(total === 0 && masterKeyword) return "";
+        return `<div class="rekap-item"><span>${s.name}</span><span class="rekap-badge">${total} barang</span></div>`;
+      })
+      .join("") || `<p style="padding:10px;color:#64748b">Data supplier tidak ditemukan.</p>`;
+  }
 
   masterProductTable.innerHTML = masterItems
     .map(i => `
@@ -783,20 +798,85 @@ function openItemModal(id){
   editId.value=id||""; modalTitle.textContent=id?"Edit Barang":"Tambah Barang";
   if(id){
     const i=db.items.find(x=>x.id===id);
-    itemName.value=i.name; cat.value=i.category_id; brand.value=i.brand_id; supplier.value=i.supplier_id; rack.value=i.rack_id; minStock.value=i.minimum_stock; buy.value=i.purchase_price; sell.value=i.selling_price;
+    itemName.value=i.name; cat.value=i.category_id; brand.value=brandName(i.brand_id); supplier.value=supplierName(i.supplier_id); rack.value=i.rack_id; minStock.value=i.minimum_stock; buy.value=i.purchase_price; sell.value=i.selling_price;
   }else{
     [itemName,minStock,buy,sell].forEach(x=>x.value="");
   }
 }
 function closeItemModal(){itemModal.classList.add("hide")}
+
+async function getOrCreateBrandId(){
+  const brandText = brand.value.trim();
+  if(!brandText){
+    toastMsg("Merek wajib diisi");
+    return null;
+  }
+
+  const existing = db.brands.find(b => b.name.toLowerCase() === brandText.toLowerCase());
+  if(existing) return existing.id;
+
+  const { data, error } = await sb
+    .from("brands")
+    .insert({ name: brandText })
+    .select("id, name")
+    .single();
+
+  if(error){
+    toastMsg("Gagal menambah merek baru");
+    console.error(error);
+    return null;
+  }
+
+  db.brands.push(data);
+  return data.id;
+}
+
+
+async function getOrCreateSupplierId(){
+  const supplierText = supplier.value.trim();
+  if(!supplierText){
+    toastMsg("Supplier wajib diisi");
+    return null;
+  }
+
+  const existing = db.suppliers.find(s => s.name.toLowerCase() === supplierText.toLowerCase());
+  if(existing) return existing.id;
+
+  const { data, error } = await sb
+    .from("suppliers")
+    .insert({
+      name: supplierText,
+      contact: "-",
+      address: "-",
+      status: "Aktif"
+    })
+    .select("id, name, contact, address, status")
+    .single();
+
+  if(error){
+    toastMsg("Gagal menambah supplier baru");
+    console.error(error);
+    return null;
+  }
+
+  db.suppliers.push(data);
+  return data.id;
+}
+
 async function saveItem(e){
   e.preventDefault();
   const id=editId.value?Number(editId.value):null;
+  const brandId = await getOrCreateBrandId();
+  if(!brandId) return;
+
+  const supplierId = await getOrCreateSupplierId();
+  if(!supplierId) return;
+
   const payload={
     name:itemName.value.trim(),
     category_id:Number(cat.value),
-    brand_id:Number(brand.value),
-    supplier_id:Number(supplier.value),
+    brand_id:Number(brandId),
+    supplier_id:Number(supplierId),
     rack_id:Number(rack.value),
     minimum_stock:Number(minStock.value),
     unit:"pcs",
