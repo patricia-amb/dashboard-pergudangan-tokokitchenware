@@ -298,12 +298,12 @@ max-height:220px !important;
           <div class="chart-card chart-small"><h3>Stok Berdasarkan Kategori</h3><canvas id="categoryChart"></canvas></div>
           <div class="chart-card chart-small"><h3>Distribusi Barang per Rak</h3><canvas id="rackChart"></canvas></div>
         </div>
-        <div class="table-card"><h3>Daftar Prioritas Restock</h3><div class="table-wrap"><table><thead><tr><th>Kode</th><th>Nama Barang</th><th>Kategori</th><th>Stok</th><th>Minimum</th><th>Rak</th><th>Status</th></tr></thead><tbody id="lowStockTable"></tbody></table></div></div>
+        <div class="table-card"><h3>Daftar Prioritas Restock</h3><div class="table-wrap"><table><thead><tr><th>Kode</th><th>Nama Barang</th><th>Kategori</th><th>Stok</th><th>Rak</th><th>Status</th></tr></thead><tbody id="lowStockTable"></tbody></table></div></div>
       </section>
 
       <section id="items" class="page">
         <div class="toolbar"><h2 class="content-title">Data Barang</h2><button id="btnAddItem" class="btn btn-primary" onclick="openItemModal()">Tambah Barang</button></div>
-        <div class="card table-wrap"><table><thead><tr><th>Kode</th><th>Nama Barang</th><th>Kategori</th><th>Merek</th><th>Supplier</th><th>Rak</th><th>Harga Modal</th><th>Harga Jual</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="itemTable"></tbody></table></div>
+        <div class="card table-wrap"><table><thead><tr><th>Kode</th><th>Nama Barang</th><th>Kategori</th><th>Merek</th><th>Supplier</th><th>Rak</th><th>Harga Modal</th><th>Harga Jual</th><th>Aksi</th></tr></thead><tbody id="itemTable"></tbody></table></div>
       </section>
 
       <section id="in" class="page">
@@ -656,8 +656,8 @@ function buildMovementRows(type){
 function renderTables(){
   const items=filteredItems();
   itemTable.innerHTML=items.map(i=>`
-    <tr><td>${i.sku}</td><td>${i.name}</td><td>${categoryName(i.category_id)}</td><td>${brandName(i.brand_id)}</td><td>${supplierName(i.supplier_id)}</td><td>${rackCode(i.rack_id)}</td><td>${rupiah(i.purchase_price)}</td><td>${rupiah(i.selling_price)}</td><td>${badge(statusItem(i))}</td>
-    <td>${currentRole==="admin"?`<button class="btn" onclick="openItemModal(${i.id})">Edit</button> <button class="btn btn-danger" onclick="deleteItem(${i.id})">Hapus</button>`:"-"}</td></tr>`).join("");
+    <tr><td>${i.sku}</td><td>${i.name}</td><td>${categoryName(i.category_id)}</td><td>${brandName(i.brand_id)}</td><td>${supplierName(i.supplier_id)}</td><td>${rackCode(i.rack_id)}</td><td>${rupiah(i.purchase_price)}</td><td>${rupiah(i.selling_price)}</td>
+<td>${currentRole==="admin"?`<button class="btn" onclick="openItemModal(${i.id})">Edit</button> <button class="btn btn-danger" onclick="deleteItem(${i.id})">Hapus</button>`:"-"}</td></tr>`).join("");
 
   reportTable.innerHTML=items.map(i=>`<tr><td>${i.sku}</td><td>${i.name}</td><td>${categoryName(i.category_id)}</td><td>${rupiah(i.current_stock*i.purchase_price)}</td><td>${rupiah(i.current_stock*i.selling_price)}</td><td>${badge(statusItem(i))}</td></tr>`).join("");
 
